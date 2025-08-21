@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile App Redirect</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        text-align: center;
+      }
+      .container {
+        background-color: #f5f5f5;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        margin: 20px 0;
+        box-sizing: border-box;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      button {
+        background-color: #007aff;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        margin: 10px;
+        width: 200px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .note {
+        margin-top: 30px;
+        padding: 15px;
+        background-color: #e7f3ff;
+        border-left: 6px solid #2196f3;
+        text-align: left;
+      }
+      .redirect-info {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        display: none;
+        word-wrap: break-word;
+        word-break: break-all;
+      }
+      .android-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Mobile App Redirect</h1>
+      <p>Enter your app's custom URL scheme:</p>
+      <input
+        type="text"
+        id="urlScheme"
+        value="testapp://"
+        placeholder="Enter URL scheme"
+      />
+      <div>
+        <button onclick="redirectToApp('ios')">Redirect to iOS</button>
+        <div class="android-buttons">
+          <button onclick="redirectToApp('android')">
+            Redirect to Android (Intent)
+          </button>
+          <button onclick="redirectToApp('android-direct')">
+            Redirect to Android (Direct)
+          </button>
+        </div>
+      </div>
+      <div id="redirectInfo" class="redirect-info">
+        <p>You will be redirected to: <strong id="redirectUrl"></strong></p>
+        <p>Redirecting in <span id="countdown">3</span> seconds...</p>
+      </div>
+      <div class="note">
+        <p><strong>How it works:</strong></p>
+        <p>1. Make sure your mobile app is installed</p>
+        <p>2. Enter the custom URL scheme registered by your app</p>
+        <p>3. Click the appropriate button for your device</p>
+        <p>4. If the app is installed, it will open automatically</p>
+        <p><strong>Note:</strong> Android has two methods:</p>
+        <p>- Intent method (recommended): Uses Android's intent system</p>
+        <p>
+          - Direct method: Uses the standard URL scheme (may not work on all
+          Android devices)
+        </p>
+      </div>
+    </div>
+
+    <script>
+      function redirectToApp(platform) {
+        const urlScheme = document.getElementById("urlScheme").value;
+
+        if (!urlScheme) {
+          alert("Please enter a URL scheme");
+          return;
+        }
+
+        let redirectUrl;
+        let method = "";
+
+        // For iOS, we directly use the URL scheme
+        if (platform === "ios") {
+          redirectUrl = urlScheme;
+          method = "iOS";
+        }
+        // For Android, we use the intent URL by default
+        else if (platform === "android") {
+          // Convert the URL scheme to an Android intent
+          // Format: intent://[host][path]#Intent;scheme=[scheme];package=[package];end
+          try {
+            const url = new URL(urlScheme);
+            redirectUrl = `intent://${url.host}${url.pathname || ""}${
+              url.search || ""
+            }#Intent;scheme=${url.protocol.replace(":", "")};end`;
+          } catch (e) {
+            // Fallback if URL parsing fails
+            redirectUrl = urlScheme;
+          }
+          method = "Android (Intent)";
+        }
+        // For Android direct method
+        else if (platform === "android-direct") {
+          redirectUrl = urlScheme;
+          method = "Android (Direct)";
+        }
+
+        // Display the redirect information
+        document.getElementById("redirectUrl").textContent = redirectUrl;
+        document.getElementById("redirectInfo").style.display = "block";
+
+        // Start countdown and redirect
+        let countdown = 3;
+        const countdownElement = document.getElementById("countdown");
+
+        const countdownInterval = setInterval(() => {
+          countdown--;
+          countdownElement.textContent = countdown;
+
+          if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            window.location.href = redirectUrl;
+          }
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
